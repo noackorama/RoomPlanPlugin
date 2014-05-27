@@ -1,0 +1,6 @@
+pluginclassname=RoomPlanPlugin
+pluginname=RoomPlanPlugin
+origin=data-quest
+version=5
+studipMinVersion=2.0
+
