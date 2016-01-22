@@ -106,7 +106,6 @@ class ShowController extends ApplicationController {
     {
         if ($GLOBALS['user']->id !== 'nobody' && getGlobalPerms($GLOBALS['user']->id) === 'admin') {
             Navigation::activateItem("/".$this->plugin->me."/show_week");
-            $layout = 'layout.php';
             $room_groups = new NobodyRoomGroups();
         } else {
             $layout = 'layout_nobody.php';
@@ -121,14 +120,14 @@ class ShowController extends ApplicationController {
         $this->room_groups = $room_groups;
         UrlHelper::addLinkParam('current_sem_week', $this->current_sem_week);
         UrlHelper::addLinkParam('only_one_week', 1);
-        return $this->render_template('show/index.php', $layout);
+        if ($layout) return $this->render_template('show/index.php', $layout);
+        else return $this->render_template('show/index.php', $this->layout);
     }
 
     function weekend_action()
     {
         if ($GLOBALS['user']->id !== 'nobody' && getGlobalPerms($GLOBALS['user']->id) === 'admin') {
             Navigation::activateItem("/".$this->plugin->me."/show_weekend");
-            $layout = 'layout.php';
             $room_groups = new NobodyRoomGroups();
         } else {
             Navigation::activateItem("/".$this->plugin->me."/show_weekend");
@@ -144,7 +143,7 @@ class ShowController extends ApplicationController {
         UrlHelper::addLinkParam('current_sem_week', $this->current_sem_week);
         UrlHelper::addLinkParam('only_one_week', 1);
         UrlHelper::addLinkParam('weekend_choose', $this->weekend_choose);
-        return $this->render_template('show/weekend.php', $layout);
+        if ($layout) return $this->render_template('show/weekend.php', $layout);
     }
 
     function room_print_weekend_action($room_id, $group_id)
@@ -224,7 +223,7 @@ class ShowController extends ApplicationController {
     }
 
 
-    function group_print_action($group_id, $dow = null)
+    function group_print_action($group_id, $dow = false)
     {
         if ($GLOBALS['user']->id !== 'nobody' && getGlobalPerms($GLOBALS['user']->id) === 'admin') {
             $room_groups = new NobodyRoomGroups();
@@ -239,7 +238,7 @@ class ShowController extends ApplicationController {
             $res_obj = ResourceObject::Factory($resource_id);
             $this->data[$resource_id]['name'] = $res_obj->getName();
             $this->data[$resource_id]['seats'] = $res_obj->getSeats();
-            $this->data[$resource_id]['room_data'] = $this->get_room_data($resource_id, (int)$dow);
+            $this->data[$resource_id]['room_data'] = $this->get_room_data($resource_id, $dow ? (int)$dow : false);
         }
         $this->groupname = $room_groups->getGroupName($group_id);
         if ($dow) {

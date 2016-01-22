@@ -21,9 +21,9 @@ class ApplicationController extends StudipController{
                                            "href" => $this->url . "stylesheets/application.css",
                                            "type" => "text/css"
                                            ));
-        PageLayout::addHeadElement('script', array("src"  => $this->url . "javascripts/application.js",
-                                             "type" => "text/javascript"
-                                           ));
+        //PageLayout::addHeadElement('script', array("src"  => $this->url . "javascripts/application.js",
+        //                                     "type" => "text/javascript"
+        //                                   ));
         $this->validate_args($args);
     }
 
