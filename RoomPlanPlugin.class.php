@@ -7,7 +7,7 @@ if (!class_exists('NobodyRoomGroups')) {
         require "NobodyRoomGroups.class.php";
 }
 
-class RoomPlanPlugin extends StudipPlugin implements Systemplugin {
+class RoomPlanPlugin extends StudipPlugin implements SystemPlugin {
 
     public $config = array();
 
@@ -16,7 +16,7 @@ class RoomPlanPlugin extends StudipPlugin implements Systemplugin {
         parent::__construct();
         $this->me = get_class($this);
         $this->restoreConfig();
-        if ($GLOBALS['user']->id !== 'nobody' && getGlobalPerms($GLOBALS['user']->id) === 'admin') {
+        if ($GLOBALS['user']->id !== 'nobody') {
             $n1 = new Navigation($this->getDisplayTitle());
             $n1->setURL(PluginEngine::getURL("$this->me/show"));
             $nstart = clone $n1;

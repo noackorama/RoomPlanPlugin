@@ -65,13 +65,15 @@ class NobodyRoomGroups {
             if (is_array($resource_ids) && count($resource_ids)){
                 $res_obj->restore($parent_id);
                 //$path = array_filter(array_reverse(array_values($res_obj->getPathArray($include_self))), $filterfunc);
-                $path = array_reverse(array_values($res_obj->getPathArray($include_self)));
-                $this->groups[$offset]['name'] = join("/", $path);
+                $path = $res_obj->getPathArray();
+                if (count($path) > 2) array_shift($path);
+                $path = array_reverse($path);
+                $offset = join("/", array_keys($path));
+                $this->groups[$offset]['name'] = join("/", array_values($path));
                 foreach ($resource_ids as $resource_id){
                     $res_obj->restore($resource_id);
                     $this->groups[$offset]['resources'][] = $resource_id;
                 }
-                ++$offset;
             }
         }
         if (count($this->groups)) {

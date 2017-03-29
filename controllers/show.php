@@ -12,7 +12,7 @@ class ShowController extends ApplicationController {
 
     private $ebnum = 0;
 
-    function before_filter($action, $args)
+    function before_filter(&$action, &$args)
     {
         ini_set('memory_limit', '256M');
         parent::before_filter($action, $args);
@@ -88,7 +88,7 @@ class ShowController extends ApplicationController {
 
     function index_action()
     {
-        if (getGlobalPerms($GLOBALS['user']->id) !== 'admin') {
+        if ($GLOBALS['user']->id === 'nobody') {
             throw new AccessDeniedException(_("Keine Berechtigung."));
         }
         Navigation::activateItem("/".$this->plugin->me."/show");
@@ -104,7 +104,7 @@ class ShowController extends ApplicationController {
 
     function index_nobody_action()
     {
-        if ($GLOBALS['user']->id !== 'nobody' && getGlobalPerms($GLOBALS['user']->id) === 'admin') {
+        if ($GLOBALS['user']->id !== 'nobody') {
             Navigation::activateItem("/".$this->plugin->me."/show_week");
             $room_groups = new NobodyRoomGroups();
         } else {
@@ -126,7 +126,7 @@ class ShowController extends ApplicationController {
 
     function weekend_action()
     {
-        if ($GLOBALS['user']->id !== 'nobody' && getGlobalPerms($GLOBALS['user']->id) === 'admin') {
+        if ($GLOBALS['user']->id !== 'nobody') {
             Navigation::activateItem("/".$this->plugin->me."/show_weekend");
             $room_groups = new NobodyRoomGroups();
         } else {
@@ -144,6 +144,7 @@ class ShowController extends ApplicationController {
         UrlHelper::addLinkParam('only_one_week', 1);
         UrlHelper::addLinkParam('weekend_choose', $this->weekend_choose);
         if ($layout) return $this->render_template('show/weekend.php', $layout);
+        else return $this->render_template('show/weekend.php', $this->layout);
     }
 
     function room_print_weekend_action($room_id, $group_id)
@@ -153,7 +154,7 @@ class ShowController extends ApplicationController {
         //return $this->render_text('<pre>'.strftime('%x %X',$this->start_time) .strftime('%x %X',$this->end_time) .print_r($this->get_room_data($room_id),1).'</pre>');
         $data = $this->get_room_data($room_id);
         $this->roomname = getResourceObjectName($room_id);
-        if ($GLOBALS['user']->id !== 'nobody' && getGlobalPerms($GLOBALS['user']->id) === 'admin') {
+        if ($GLOBALS['user']->id !== 'nobody') {
             $room_groups = new NobodyRoomGroups();
         } else {
             $room_groups = new NobodyRoomGroups();
@@ -166,7 +167,7 @@ class ShowController extends ApplicationController {
 
     function group_print_weekend_action($group_id)
     {
-        if ($GLOBALS['user']->id !== 'nobody' && getGlobalPerms($GLOBALS['user']->id) === 'admin') {
+        if ($GLOBALS['user']->id !== 'nobody') {
             $room_groups = new NobodyRoomGroups();
         } else {
             $room_groups = new NobodyRoomGroups();
@@ -193,7 +194,7 @@ class ShowController extends ApplicationController {
         //return $this->render_text('<pre>'.print_r($this->get_room_data($room_id),1).'</pre>');
         $data = $this->get_room_data($room_id);
         $this->roomname = getResourceObjectName($room_id);
-        if ($GLOBALS['user']->id !== 'nobody' && getGlobalPerms($GLOBALS['user']->id) === 'admin') {
+        if ($GLOBALS['user']->id !== 'nobody') {
             $room_groups = new NobodyRoomGroups();
         } else {
             $room_groups = new NobodyRoomGroups();
@@ -202,7 +203,7 @@ class ShowController extends ApplicationController {
         if ($this->only_one_week) {
             $schedule = new ScheduleWeek(8, 22, FALSE, $this->start_time, true);
             foreach($data as $one) {
-                $schedule->addEvent($one['instabbr'] . ' - ' . $one['name'], $one['begin'], $one['end'],
+                $schedule->addEvent(null, $one['instabbr'] . ' - ' . $one['name'], $one['begin'], $one['end'],
                         "", $one['sem_doz_names']);
             }
         } else {
@@ -213,7 +214,7 @@ class ShowController extends ApplicationController {
                 } else {
                     $name = $one['instabbr'] . ' - ' . $one['name'];
                 }
-                $schedule->addEvent($name, $one['begin'], $one['end'],
+                $schedule->addEvent(null, $name, $one['begin'], $one['end'],
                         "", $one['sem_doz_names']);
             }
         }
@@ -225,7 +226,7 @@ class ShowController extends ApplicationController {
 
     function group_print_action($group_id, $dow = false)
     {
-        if ($GLOBALS['user']->id !== 'nobody' && getGlobalPerms($GLOBALS['user']->id) === 'admin') {
+        if ($GLOBALS['user']->id !== 'nobody') {
             $room_groups = new NobodyRoomGroups();
         } else {
             $room_groups = new NobodyRoomGroups();
@@ -242,22 +243,22 @@ class ShowController extends ApplicationController {
         }
         $this->groupname = $room_groups->getGroupName($group_id);
         if ($dow) {
-        $this->weekday = strftime('%A', strtotime("+".(int)($dow-1)." day", strtotime('this monday')));
-        $schedule = new SemGroupScheduleDayOfWeek(8, 22, $group , $this->start_time, (int)$dow);
-        foreach (array_keys($this->data) as $room_to_show_id => $room_id){
-            foreach($this->data[$room_id]['room_data'] as $one) {
-                if ($one['eb_id']) {
-                    $name = $one['shortname'] . ':'. $one['name'];
-                } else {
-                    $name = $one['instabbr'] . ' - ' . $one['name'];
+            $this->weekday = strftime('%A', strtotime("+".(int)($dow-1)." day", strtotime('this monday')));
+            $schedule = new SemGroupScheduleDayOfWeek(8, 22, $group , $this->start_time, (int)$dow);
+            foreach (array_keys($this->data) as $room_to_show_id => $room_id){
+                foreach($this->data[$room_id]['room_data'] as $one) {
+                    if ($one['eb_id']) {
+                        $name = $one['shortname'] . ':'. $one['name'];
+                    } else {
+                        $name = $one['instabbr'] . ' - ' . $one['name'];
+                    }
+                    $schedule->addEvent($room_to_show_id, $name, $one['begin'], $one['end'],
+                                        '', $one['sem_doz_names']);
                 }
-                $schedule->addEvent($room_to_show_id, $name, $one['begin'], $one['end'],
-                                    '', $one['sem_doz_names']);
             }
-        }
-        $this->current_day = strtotime(sprintf('+%d day', $dow-1), $this->start_time);
-        $this->schedule = $schedule;
-        $this->render_template('show/groupschedule.php', 'printlayout.php');
+            $this->current_day = strtotime(sprintf('+%d day', $dow-1), $this->start_time);
+            $this->schedule = $schedule;
+            $this->render_template('show/groupschedule.php', 'printlayout.php');
         } else {
             $data = array();
             foreach ($this->data as $one_room) {

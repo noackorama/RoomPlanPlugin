@@ -8,7 +8,7 @@ class ApplicationController extends StudipController{
         $this->plugin = $this->dispatcher->current_plugin;
     }
 
-    function before_filter($action, $args) {
+    function before_filter(&$action, &$args) {
 
         $this->current_action = $action;
         $this->flash = Trails_Flash::instance();

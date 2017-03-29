@@ -1,6 +1,6 @@
 pluginclassname=RoomPlanPlugin
 pluginname=RoomPlanPlugin
 origin=data-quest
-version=6
-studipMinVersion=2.3
+version=7.9999
+studipMinVersion=3.5
 
